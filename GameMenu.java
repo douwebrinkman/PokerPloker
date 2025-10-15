@@ -13,17 +13,16 @@ public class GameMenu extends JPanel {
     GameMenu() {
         super();
         super.add(raiseAmount);
-        super.add(raiseButton(turn));
-        super.add(foldButton(turn));
-        super.add(checkButton(turn));
+        // super.add(raiseButton(turn));
+        // super.add(foldButton(turn));
+        // super.add(checkButton(turn));
         for (int i = 0; i < CreateMenu.playerList.size(); i++) {
             JLabel name = new JLabel(CreateMenu.playerList.get(i));
-            //JLabel chips = new JLabel(CreateMenu.money.get(i).toString()); crasht
+            JLabel chips = new JLabel(CreateMenu.money.get(i).toString());
             super.add(name);
-            //System.out.println((String) CreateMenu.money.get(i));
             JLabel chipsText = new JLabel("Chips:");
             super.add(chipsText);
-            //super.add(chips);
+            super.add(chips);
         }
         
     }

@@ -103,12 +103,13 @@ public class CreateMenu extends JPanel {
                 } else if ((int) startingBet.getValue() >= (int) startAmount.getValue()) {
                     error.setText("The starting bet value should be lower than the start amount");
                 } else {
-                    menu.close(self);
-                    menu.open(new GameMenu());
                     for (int i = 0; i < CreateMenu.playerList.size(); i++) {
                         money.add((int) CreateMenu.startAmount.getValue());
                         
                     }
+                    menu.close(self);
+                    menu.open(new GameMenu());
+                  
                 }
             }
         });
