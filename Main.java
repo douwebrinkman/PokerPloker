@@ -1,28 +1,11 @@
-import javax.swing.*;
+import graphics.Window;
 
 public class Main {
-    JFrame frame = new JFrame("JOKER POKER");
+    Window window = new Window();
+    GameState state = new GameState();
 
     void run() {
-        frame.add(new CreateMenu(this, GameState state));
-        
-        frame.setSize(500, 600);
-        frame.setVisible(true); 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-    }
-
-    public void close(JPanel v) {
-        frame.remove(v);
-    }
-    
-    public void open(JPanel q) {
-        frame.add(q);
-        updateFrame();
-    }
-
-    public void updateFrame() {
-        SwingUtilities.updateComponentTreeUI(frame);
+        window.open(new CreateMenu(window, state));
     }
 
     public static void main(String[] args) {

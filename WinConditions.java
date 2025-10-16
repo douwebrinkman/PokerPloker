@@ -3,7 +3,7 @@
  */
 
 public class WinConditions {
-    String input = Game.drawnCards.toString();
+    String input = GameState.drawnCards.toString();
     String numbers = input.substring(1);
     int number = Integer.parseInt(numbers);
 

@@ -4,6 +4,7 @@
  * 
  * 
  */
+import graphics.Window;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +15,7 @@ import javax.swing.JPanel;
 
 public class StartMenu extends JPanel {
 
-    public StartMenu(Menu menu) {
+    public StartMenu(Window window) {
         super();
         ImageIcon blah = new ImageIcon("logo.jpg");
         JLabel pic = new JLabel(blah);
@@ -31,8 +32,8 @@ public class StartMenu extends JPanel {
         pButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                    menu.close(self);
-                    menu.open(new OptionMenu());
+                    window.close(self);
+                    window.open(new OptionMenu(window));
                 
             }
         });
