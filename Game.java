@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Game {
+    static ArrayList<String> drawnCards = new ArrayList<String>();
     ArrayList<String> cards = new ArrayList<String>();
     
 
@@ -30,7 +31,6 @@ public class Game {
     
     void drawCards(int numBots) {
         Random r = new Random();
-        ArrayList<String> drawnCards = new ArrayList<String>();
         for (int i = 0; i < (7 + (2 * numBots)); i++) {
             int randomNum = r.nextInt(52); // 0 t/m 51 
             //System.out.println(randomNum);
