@@ -19,7 +19,7 @@ public class GameState {
     JFormattedTextField startingBet = new JFormattedTextField(NumberFormat.getIntegerInstance());
     static ArrayList<String> drawnCards = new ArrayList<String>();
     ArrayList<String> cards = cards();
-    boolean input = false;
+    //boolean input = false;
     JLabel middleCards = new JLabel("[?][?][?][?][?]");
     JLabel hand = new JLabel("[?][?]");
     JLabel itsTurn = new JLabel("its ... turn");
@@ -55,6 +55,7 @@ public class GameState {
         points.add(seven);
         return points;
     }
+
     public void calcPot() {
         int pot = 0;
         for (int i = 0; i < playerList.size(); i++) {
@@ -89,6 +90,7 @@ public class GameState {
         calcPot();
         // sleep 2 sec
         turn2(0);
+        System.out.println("klaar werkt?");
         /*calcPot();
         String a = drawnCards.get(0);
         String b = drawnCards.get(1);
@@ -116,15 +118,15 @@ public class GameState {
         hand.setText("[?][?]");
         itsTurn.setText("Its " + playerList.get(k) + " turn");
         if (checkBot(playerList.get(k))) {
-                //(buttons should be gray)turn buttons gray
-                //sleep for 2 sec
-                //turn label back,
+            //(buttons should be gray)turn buttons gray
+            //sleep for 2 sec
+            //turn label back,
             System.out.println("kaas??");
         } else {
-            System.out.println("frikandel");
+            System.out.println("turn: " + k);
             //turn buttons green
             //change (showcards) to k
-            ScheduledFuture<?> f = timer.schedule(() -> {
+            f = timer.schedule(() -> {
                 System.out.println("werkt ni");
                 timeOutCheck(k); // just do a check if no input
                 timer.shutdown();
@@ -133,19 +135,20 @@ public class GameState {
         }
     }
 
-    int highestBet() { //int or integer?
-        int max = bet.get(0);
-        for (int i = 0; i < bet.size(); i++) {
-            if (max < bet.get(i)) {
-                max = bet.get(i);
-            }
-            
+    void cancelTimer(int turn) {
+        if (!f.isDone()) {
+            f.cancel(true);
+            //timer.shutdown();
+            //input = false;
+            nextTurn(turn);
+            System.out.println("Button pressed — timer canceled.");
         }
-        return max;
+
     }
+
     void nextTurn(int k) {
         if (((r == 0) && (k + 1 == playerList.size())) || (r == k + 1)) {
-            //stop recursion
+            //help
             System.out.println("kaas");
         } else if (k + 1 < playerList.size()) {
             System.out.println("kaas1");
@@ -171,7 +174,7 @@ public class GameState {
         String name = playerList.get(turn);
         String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Chips: " + betNum + "</html>";
         p.get(turn).setText(text);  
-        input = false;
+        //input = false;
         nextTurn(turn);
     }
 
@@ -202,4 +205,15 @@ public class GameState {
         }
         System.out.println(drawnCards);
     } 
+
+    int highestBet() { //int or integer?
+        int max = bet.get(0);
+        for (int i = 0; i < bet.size(); i++) {
+            if (max < bet.get(i)) {
+                max = bet.get(i);
+            }
+            
+        }
+        return max;
+    }
 }

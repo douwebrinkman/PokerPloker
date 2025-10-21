@@ -15,13 +15,13 @@ public class Game extends JPanel {
         super.setLayout(null);
         raiseAmount.setBounds(100, 700, 100, 50);
         super.add(raiseAmount);
-        JButton raiseButton = raiseButton(state.turnNum);
+        JButton raiseButton = raiseButton();
         raiseButton.setBounds(100, 800, 200, 100);
         super.add(raiseButton);
-        JButton foldButton = foldButton(state.turnNum);
+        JButton foldButton = foldButton();
         foldButton.setBounds(300, 800, 200, 100);
         super.add(foldButton);
-        JButton checkButton = checkButton(state.turnNum);
+        JButton checkButton = checkButton();
         checkButton.setBounds(500, 800, 200, 100);
         super.add(checkButton);
         for (int i = 0; i < state.playerList.size(); i++) {
@@ -50,11 +50,13 @@ public class Game extends JPanel {
         
     }
 
-    JButton raiseButton(int turn) {
+    JButton raiseButton() {
         JButton button = new JButton("Raise");
+        
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int turn = state.turnNum;
                 int raise = (int) raiseAmount.getValue();
                 if (raise <= state.money.get(turn)) {
                     state.money.set(turn, state.money.get(turn) - raise);
@@ -65,40 +67,38 @@ public class Game extends JPanel {
                     String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Chips: " + bet + "</html>";
                     state.p.get(turn).setText(text); 
                     state.r = turn;
-                    state.input = true;
+                    //state.input = true;
+                    state.cancelTimer(turn);
                     System.out.println("dit werkt5"); 
-                }
-                if (!state.f.isDone() && state.input) {
-                    state.f.cancel(true);
-                    state.timer.shutdown(); 
-                    state.input = false;
-                    state.nextTurn(turn);
-                    System.out.println("Button pressed — timer canceled.");
                 }
             }
         });
         return button;
     }
 
-    JButton checkButton(int turn) {
+    JButton checkButton() {
         JButton button = new JButton("Check");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int turn = state.turnNum;
                 int diff = state.highestBet() - state.bet.get(turn);
                 if (diff == 0) {
-                    state.input = true;
+                    //state.input = true;
+                    state.cancelTimer(turn);
                     System.out.println("dit werkt1");
                     //mnext turn
                 } else if (diff < state.money.get(turn)) {
                     state.bet.set(turn, state.highestBet());
                     state.money.set(turn, state.money.get(turn) - diff);
-                    state.input = true;
+                    //state.input = true;
+                    state.cancelTimer(turn);
                     System.out.println("dit werkt2");
                 } else if (diff > state.money.get(turn)) {
                     state.bet.set(turn, state.bet.get(turn) + state.money.get(turn));
                     state.money.set(turn, 0);
-                    state.input = true;
+                    //state.input = true;
+                    state.cancelTimer(turn);
                     System.out.println("dit werkt3");
                 }
                 String bet = state.bet.get(turn).toString();
@@ -106,36 +106,23 @@ public class Game extends JPanel {
                 String name = state.playerList.get(turn);
                 String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Chips: " + bet + "</html>";
                 state.p.get(turn).setText(text); 
-                if (!state.f.isDone() && state.input) {
-                    state.f.cancel(true);
-                    state.timer.shutdown();
-                    state.input = false;
-                    state.nextTurn(turn);
-                    System.out.println("Button pressed — timer canceled.");
-                }
-                
             }
         });
         return button;
     }
 
-    JButton foldButton(int turn) {
+    JButton foldButton() {
         JButton button = new JButton("Fold");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                state.input = true;
+                int turn = state.turnNum;
+                //state.input = true;
                 System.out.println("dit werkt");
                 //remove turn from turn()
                 //if turn().size is 1 --> win turn.get(0)
                 //else next turn
-                if (!state.f.isDone() && state.input) {
-                    state.f.cancel(true);
-                    state.timer.shutdown();
-                    state.input = false;
-                    state.nextTurn(turn);
-                    System.out.println("Button pressed — timer canceled.");
-                }
+                state.cancelTimer(turn);
             }
             });
     
