@@ -6,11 +6,8 @@
 import graphics.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.NumberFormat;
-import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -22,9 +19,6 @@ public class CreateMenu extends JPanel {
     JLabel error = new JLabel("");
     JLabel list = new JLabel("Players: ");
     GameState state = null;
-    
-
-    
 
     CreateMenu(Window window, GameState state) {
         super();
@@ -107,6 +101,7 @@ public class CreateMenu extends JPanel {
                     }
                     window.close(self);
                     window.open(new Game(state));
+                    //state.round();
                   
                 }
             }
