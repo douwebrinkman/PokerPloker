@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 
@@ -12,6 +13,7 @@ public class GameState {
     int turnNum;
     int r = 0;
     int partRound;
+    int pot;
     ArrayList<JLabel> p = points();
     ArrayList<String> playerList = new ArrayList<>();
     ArrayList<Integer> money = new ArrayList<>();
@@ -22,6 +24,8 @@ public class GameState {
     static ArrayList<String> drawnCards = new ArrayList<String>();
     ArrayList<String> cards = cards();
     boolean foldedPlayer;
+    boolean roundEnded = false;
+    boolean roundRunning = false;
     JLabel middleCards = new JLabel("[?][?][?][?][?]");
     JLabel hand = new JLabel("[?][?]");
     JLabel itsTurn = new JLabel("its ... turn");
@@ -59,7 +63,7 @@ public class GameState {
     }
 
     public void calcPot() {
-        int pot = 0;
+        pot = 0;
         for (int i = 0; i < playerList.size(); i++) {
             pot = pot + bet.get(i);
         }
@@ -79,6 +83,8 @@ public class GameState {
     }
 
     public void round() {
+        roundRunning = true;
+        roundEnded = false;
         int anti = ((Number) startingBet.getValue()).intValue();
         for (int i = 0; i < playerList.size(); i++) {
             money.set(i, (money.get(i) - anti));
@@ -167,6 +173,8 @@ public class GameState {
                 turn2(0);
             } else if (partRound == 4) {
                 calcPot();
+                roundEnded = true;
+                System.out.println("choose winner");
                 //wincondition
                 //if players fold, win should be faster
             }
@@ -237,5 +245,14 @@ public class GameState {
             
         }
         return max;
+    }
+
+    public String[] winnerList() {
+        String[] l = new String[playerList.size()];
+        for (int i = 0; i < playerList.size(); i++) {
+            l[i] = (playerList.get(i));
+        }
+        System.out.println(l);
+        return l;
     }
 }

@@ -1,13 +1,17 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.text.NumberFormatter;
 
 public class Game extends JPanel {
     JFormattedTextField raiseAmount = new JFormattedTextField(NumberFormat.getIntegerInstance());
+    JComboBox<String> winnerList;
     GameState state = null;
 
     Game(GameState state) {
@@ -44,6 +48,12 @@ public class Game extends JPanel {
         JButton startButton = startButton();
         startButton.setBounds(1000, 100, 200, 100);
         super.add(startButton);
+        JButton chooseButton = chooseWinner();
+        chooseButton.setBounds(1200, 100, 200, 50);
+        super.add(chooseButton);
+        JComboBox<String> winnerList = new JComboBox<>(state.winnerList());
+        winnerList.setBounds(1200, 150, 200, 50);
+        super.add(winnerList);
         state.hand.setBounds(1200, 600, 100, 200);
         super.add(state.hand);
         state.potLabel.setBounds(700, 400, 100, 100);
@@ -132,8 +142,35 @@ public class Game extends JPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                state.round();
-                state.drawCards(state.playerList.size());
+                if (!state.roundRunning) {
+                    state.round();
+                    state.drawCards(state.playerList.size());
+                }
+            }
+            });
+    
+        return button;
+    }
+
+    JButton chooseWinner() {
+        JButton button = new JButton("Choose Winner");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (state.roundEnded) {
+                    String name = (String) winnerList.getSelectedItem();
+                    int player = 0;
+                    for (int i = 0; i < state.playerList.size(); i++) { 
+                        if (state.playerList.get(i).equals(name)) { 
+                            player = i;
+                            break;
+                        }
+                    }
+                    //if players have the same name wrong person could get the money
+                    state.money.set(player, (state.pot + state.money.get(player)));
+                    state.roundRunning = false;
+                }
+                
             }
             });
     
