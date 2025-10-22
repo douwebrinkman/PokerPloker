@@ -11,15 +11,17 @@ import javax.swing.JLabel;
 public class GameState {
     int turnNum;
     int r = 0;
+    int partRound;
     ArrayList<JLabel> p = points();
     ArrayList<String> playerList = new ArrayList<>();
     ArrayList<Integer> money = new ArrayList<>();
     ArrayList<Integer> bet = new ArrayList<>();
+    ArrayList<Integer> folded = new ArrayList<>();
     JFormattedTextField startAmount = new JFormattedTextField(NumberFormat.getIntegerInstance());
     JFormattedTextField startingBet = new JFormattedTextField(NumberFormat.getIntegerInstance());
     static ArrayList<String> drawnCards = new ArrayList<String>();
     ArrayList<String> cards = cards();
-    //boolean input = false;
+    boolean foldedPlayer;
     JLabel middleCards = new JLabel("[?][?][?][?][?]");
     JLabel hand = new JLabel("[?][?]");
     JLabel itsTurn = new JLabel("its ... turn");
@@ -77,7 +79,7 @@ public class GameState {
     }
 
     public void round() {
-        int anti = (int) startingBet.getValue();
+        int anti = ((Number) startingBet.getValue()).intValue();
         for (int i = 0; i < playerList.size(); i++) {
             money.set(i, (money.get(i) - anti));
             bet.add(anti);
@@ -89,50 +91,42 @@ public class GameState {
         }
         calcPot();
         // sleep 2 sec
+        partRound = 1;
         turn2(0);
-        System.out.println("klaar werkt?");
-        /*calcPot();
-        String a = drawnCards.get(0);
-        String b = drawnCards.get(1);
-        String c = drawnCards.get(2);
-        middleCards.setText("[" + a + "][" + b + "][" + c + "][?][?]");
-        turn2(0);
-        calcPot();
-        String d = drawnCards.get(3);
-        middleCards.setText("[" + a + "][" + b + "][" + c + "][" + d + "][?]");
-        //reveal 1 more card
-        turn2(0);
-        calcPot();
-        String e = drawnCards.get(4);
-        middleCards.setText("[" + a + "][" + b + "][" + c + "][" + d + "][" + e + "]");
-        //reveal 1 more card
-        turn2(0);
-        calcPot();
-        //wincondition
-
-        //if fold players leave round so win could be earlier*/
     }
 
     public void turn2(int k) {
-        turnNum = k;
-        hand.setText("[?][?]");
-        itsTurn.setText("Its " + playerList.get(k) + " turn");
-        if (checkBot(playerList.get(k))) {
-            //(buttons should be gray)turn buttons gray
-            //sleep for 2 sec
-            //turn label back,
-            System.out.println("kaas??");
-        } else {
-            System.out.println("turn: " + k);
-            //turn buttons green
-            //change (showcards) to k
-            f = timer.schedule(() -> {
-                System.out.println("werkt ni");
-                timeOutCheck(k); // just do a check if no input
-                timer.shutdown();
-            }, 20, TimeUnit.SECONDS); //400 sec time
-            //set turnlabel back       
+        for (int j = 0; j < folded.size(); j++) {
+            if (k == folded.get(j)) {
+                foldedPlayer = true;
+                break;
+            }
         }
+        if (foldedPlayer) {
+            foldedPlayer = false;
+            nextTurn(k);
+        } else {
+            turnNum = k;
+            hand.setText("[?][?]");
+            itsTurn.setText("Its " + playerList.get(k) + " turn");
+            if (checkBot(playerList.get(k))) {
+                //(buttons should be gray)turn buttons gray
+                //sleep for 2 sec
+                //turn label back,
+                System.out.println("kaas??");
+            } else {
+                System.out.println("turn: " + k);
+                //turn buttons green
+                //change (showcards) to k
+                f = timer.schedule(() -> {
+                    System.out.println("werkt ni");
+                    timeOutCheck(k); // just do a check if no input
+                    timer.shutdown();
+                }, 400, TimeUnit.SECONDS); //400 sec time
+                //set turnlabel back       
+            }
+        }
+
     }
 
     void cancelTimer(int turn) {
@@ -148,7 +142,35 @@ public class GameState {
 
     void nextTurn(int k) {
         if (((r == 0) && (k + 1 == playerList.size())) || (r == k + 1)) {
-            //help
+            r = 0;
+            String a = drawnCards.get(0);
+            String b = drawnCards.get(1);
+            String c = drawnCards.get(2);
+            String d = drawnCards.get(3);
+            String e = drawnCards.get(4);
+            if (partRound == 1) {
+                System.out.println("ronde 2");
+                calcPot();
+                middleCards.setText("[" + a + "][" + b + "][" + c + "][?][?]");
+                partRound = 2;
+                turn2(0);
+            } else if (partRound == 2) {
+                calcPot();
+                middleCards.setText("[" + a + "][" + b + "][" + c + "][" + d + "][?]");
+                //reveal 1 more card
+                partRound = 3;
+                turn2(0);
+            } else if (partRound == 3) {
+                calcPot();
+                middleCards.setText("[" + a + "][" + b + "][" + c + "][" + d + "][" + e + "]");
+                partRound = 4;
+                turn2(0);
+            } else if (partRound == 4) {
+                calcPot();
+                //wincondition
+                //if players fold, win should be faster
+            }
+
             System.out.println("kaas");
         } else if (k + 1 < playerList.size()) {
             System.out.println("kaas1");
@@ -156,7 +178,7 @@ public class GameState {
         } else {
             System.out.println("kaas2");
             turn2(0);
-        } // i forgot folded players, maybe make copy playerlist and remove them from it
+        }
     }
 
     void timeOutCheck(int turn) {

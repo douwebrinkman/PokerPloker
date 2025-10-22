@@ -86,17 +86,19 @@ public class CreateMenu extends JPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int amount = ((Number) state.startAmount.getValue()).intValue();
+                int bet = ((Number) state.startingBet.getValue()).intValue();
                 if ((state.playerList.size() < 2)) {
                     error.setText("The game should have at least 2 players");
-                } else if ((int) state.startAmount.getValue() <= 0) {
+                } else if (amount <= 0) {
                     error.setText("The start amount should me higher than 0");
-                } else if ((int) state.startingBet.getValue() <= 0) {
+                } else if (bet <= 0) {
                     error.setText("The starting bet value should be higher than 0");
-                } else if ((int) state.startingBet.getValue() >= (int) state.startAmount.getValue()) {
+                } else if (bet >= amount) {
                     error.setText("The starting bet value should be lower than the start amount");
                 } else {
                     for (int i = 0; i < state.playerList.size(); i++) {
-                        state.money.add((int) state.startAmount.getValue());
+                        state.money.add(amount);
                         
                     }
                     window.close(self);

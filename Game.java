@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
+import javax.swing.text.NumberFormatter;
 
 public class Game extends JPanel {
     JFormattedTextField raiseAmount = new JFormattedTextField(NumberFormat.getIntegerInstance());
@@ -14,6 +15,7 @@ public class Game extends JPanel {
         this.state = state;
         super.setLayout(null);
         raiseAmount.setBounds(100, 700, 100, 50);
+        raiseAmount.setValue(10);
         super.add(raiseAmount);
         JButton raiseButton = raiseButton();
         raiseButton.setBounds(100, 800, 200, 100);
@@ -36,7 +38,7 @@ public class Game extends JPanel {
         super.add(state.middleCards);
         state.itsTurn.setBounds(700, 600, 100, 100);
         super.add(state.itsTurn);
-        JButton showCardsButton = showCardsButton(state.turnNum);
+        JButton showCardsButton = showCardsButton();
         showCardsButton.setBounds(1200, 800, 200, 100);
         super.add(showCardsButton);
         JButton startButton = startButton();
@@ -51,13 +53,13 @@ public class Game extends JPanel {
     }
 
     JButton raiseButton() {
-        JButton button = new JButton("Raise");
+        JButton button = new JButton("Raise"); 
         
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int turn = state.turnNum;
-                int raise = (int) raiseAmount.getValue();
+                int raise = ((Number) raiseAmount.getValue()).intValue();;
                 if (raise <= state.money.get(turn)) {
                     state.money.set(turn, state.money.get(turn) - raise);
                     state.bet.set(turn, state.bet.get(turn) + raise); // also add to pot?
@@ -117,11 +119,7 @@ public class Game extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int turn = state.turnNum;
-                //state.input = true;
-                System.out.println("dit werkt");
-                //remove turn from turn()
-                //if turn().size is 1 --> win turn.get(0)
-                //else next turn
+                state.folded.add(turn);
                 state.cancelTimer(turn);
             }
             });
@@ -142,11 +140,12 @@ public class Game extends JPanel {
         return button;
     }
 
-    JButton showCardsButton(int turn) {
+    JButton showCardsButton() {
         JButton button = new JButton("Show Cards");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int turn = state.turnNum;
                 String a = GameState.drawnCards.get(turn + 5);
                 String b = GameState.drawnCards.get(turn + 6);
                 state.hand.setText("[" + a + "]" + "[" + b + "]");  
