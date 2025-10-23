@@ -48,7 +48,7 @@ public class Game extends JPanel {
         JButton chooseButton = chooseWinner();
         chooseButton.setBounds(1200, 100, 200, 50);
         super.add(chooseButton);
-        JComboBox<String> winnerList = new JComboBox<>(state.winnerList());
+        winnerList = new JComboBox<>(state.winnerList());
         winnerList.setBounds(1200, 150, 200, 50);
         super.add(winnerList);
         state.hand.setBounds(1200, 600, 100, 200);
@@ -157,7 +157,17 @@ public class Game extends JPanel {
                 if (state.roundEnded) {
                     int player = winnerList.getSelectedIndex();
                     state.money.set(player, (state.pot + state.money.get(player)));
-                    state.roundRunning = false;
+                    for (int i = 0; i < state.playerList.size(); i++) {
+                        state.bet.set(i, 0);
+                    }
+                    for (int j = 0; j < state.playerList.size(); j++) {
+                        String bet = state.bet.get(j).toString();
+                        String chips = state.money.get(j).toString();
+                        String name = state.playerList.get(j);
+                        String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + bet + "</html>";
+                        state.p.get(j).setText(text); 
+                        state.roundRunning = false;
+                    }
                 } 
             }
             });
@@ -171,8 +181,8 @@ public class Game extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int turn = state.turnNum;
-                String a = GameState.drawnCards.get(turn + 5);
-                String b = GameState.drawnCards.get(turn + 6);
+                String a = GameState.drawnCards.get((turn * 2) + 5);
+                String b = GameState.drawnCards.get((turn * 2) + 6);
                 state.hand.setText("[" + a + "]" + "[" + b + "]");  
             }
             });

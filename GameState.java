@@ -84,6 +84,7 @@ public class GameState {
     public void round() {
         roundRunning = true;
         roundEnded = false;
+        middleCards.setText("[?][?][?][?][?]");
         int anti = ((Number) startingBet.getValue()).intValue();
         for (int i = 0; i < playerList.size(); i++) {
             money.set(i, (money.get(i) - anti)); //add check if possible 
