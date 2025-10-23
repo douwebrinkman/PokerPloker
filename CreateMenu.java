@@ -103,7 +103,6 @@ public class CreateMenu extends JPanel {
                     }
                     window.close(self);
                     window.open(new Game(state));
-                    //state.round();
                   
                 }
             }

@@ -5,7 +5,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 
@@ -87,16 +86,16 @@ public class GameState {
         roundEnded = false;
         int anti = ((Number) startingBet.getValue()).intValue();
         for (int i = 0; i < playerList.size(); i++) {
-            money.set(i, (money.get(i) - anti));
+            money.set(i, (money.get(i) - anti)); //add check if possible 
             bet.add(anti);
             String betNum = bet.get(i).toString(); //we use it 4 times maybe make a method
             String chips = money.get(i).toString();
             String name = playerList.get(i);
-            String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Chips: " + betNum + "</html>";
+            String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + betNum + "</html>";
             p.get(i).setText(text);  
         }
         calcPot();
-        // sleep 2 sec
+        // maybe sleep 2 sec
         partRound = 1;
         turn2(0);
     }
@@ -139,7 +138,6 @@ public class GameState {
         if (!f.isDone()) {
             f.cancel(true);
             //timer.shutdown();
-            //input = false;
             nextTurn(turn);
             System.out.println("Button pressed — timer canceled.");
         }
@@ -163,7 +161,6 @@ public class GameState {
             } else if (partRound == 2) {
                 calcPot();
                 middleCards.setText("[" + a + "][" + b + "][" + c + "][" + d + "][?]");
-                //reveal 1 more card
                 partRound = 3;
                 turn2(0);
             } else if (partRound == 3) {
@@ -192,7 +189,7 @@ public class GameState {
     void timeOutCheck(int turn) {
         int diff = highestBet() - bet.get(turn);
         if (diff == 0) {
-            //mnext turn
+            //next turn
         } else if (diff < money.get(turn)) {
             bet.set(turn, highestBet());
             money.set(turn, money.get(turn) - diff);
@@ -202,7 +199,7 @@ public class GameState {
         String betNum = bet.get(turn).toString();
         String chips = money.get(turn).toString();
         String name = playerList.get(turn);
-        String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Chips: " + betNum + "</html>";
+        String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + betNum + "</html>";
         p.get(turn).setText(text);  
         //input = false;
         nextTurn(turn);
