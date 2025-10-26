@@ -99,11 +99,11 @@ public class CreateMenu extends JPanel {
                 } else {
                     for (int i = 0; i < state.playerList.size(); i++) {
                         state.money.add(amount);
-                        
+                        state.bet.add(0);
                     }
                     window.close(self);
                     window.open(new Game(state));
-                  
+                    
                 }
             }
         });
