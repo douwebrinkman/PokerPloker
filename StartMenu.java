@@ -17,7 +17,7 @@ public class StartMenu extends JPanel {
 
     public StartMenu(Window window, GameState state) {
         super();
-        ImageIcon blah = new ImageIcon("logo.jpg");
+        ImageIcon blah = new ImageIcon("thumbnail_Poker logo2.jpg");
         JLabel pic = new JLabel(blah);
         super.add(pic);
         JPanel pPanel = new JPanel(new GridBagLayout());
