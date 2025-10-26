@@ -1,13 +1,19 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class Game extends JPanel {
     JFormattedTextField raiseAmount = new JFormattedTextField(NumberFormat.getIntegerInstance());
+    static ArrayList<JLabel> p = points();
     JComboBox<String> winnerList;
     GameState state = null;
 
@@ -32,12 +38,12 @@ public class Game extends JPanel {
             String chips = state.money.get(i).toString();
             String name = state.playerList.get(i);
             String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + bet + "</html>";
-            state.p.get(i).setText(text); 
-            super.add(state.p.get(i));
+            p.get(i).setText(text); 
+            super.add(p.get(i));
         }
         state.middleCards.setBounds(700, 400, 300, 300);
         super.add(state.middleCards);
-        state.itsTurn.setBounds(700, 600, 100, 100);
+        state.itsTurn.setBounds(700, 600, 200, 100);
         super.add(state.itsTurn);
         JButton showCardsButton = showCardsButton();
         showCardsButton.setBounds(1200, 800, 200, 100);
@@ -65,19 +71,17 @@ public class Game extends JPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int turn = state.turnNum;
-                int raise = ((Number) raiseAmount.getValue()).intValue();;
-                if (raise <= state.money.get(turn)) {
-                    state.money.set(turn, state.money.get(turn) - raise);
-                    state.bet.set(turn, state.bet.get(turn) + raise); // also add to pot?
-                    String bet = state.bet.get(turn).toString();
-                    String chips = state.money.get(turn).toString();
-                    String name = state.playerList.get(turn);
-                    String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + bet + "</html>";
-                    state.p.get(turn).setText(text); 
-                    state.r = turn;
-                    state.cancelTimer(turn);
-                    System.out.println("raise1"); 
+                if (state.roundRunning) {
+                    int turn = state.turnNum;
+                    int raise = ((Number) raiseAmount.getValue()).intValue();;
+                    if (raise <= state.money.get(turn)) {
+                        state.money.set(turn, state.money.get(turn) - raise);
+                        state.bet.set(turn, state.bet.get(turn) + raise); // also add to pot?
+                        state.setPlayerText(turn); 
+                        state.r = turn;
+                        state.cancelTimer(turn);
+                        System.out.println("raised"); 
+                    }
                 }
             }
         });
@@ -89,27 +93,25 @@ public class Game extends JPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int turn = state.turnNum;
-                int diff = state.highestBet() - state.bet.get(turn);
-                if (diff == 0) {
-                    state.cancelTimer(turn);
-                    System.out.println("check1");
-                } else if (diff < state.money.get(turn)) {
-                    state.bet.set(turn, state.highestBet());
-                    state.money.set(turn, state.money.get(turn) - diff);
-                    state.cancelTimer(turn);
-                    System.out.println("check2");
-                } else if (diff > state.money.get(turn)) {
-                    state.bet.set(turn, state.bet.get(turn) + state.money.get(turn));
-                    state.money.set(turn, 0);
-                    state.cancelTimer(turn);
-                    System.out.println("check3");
+                if (state.roundRunning) {
+                    int turn = state.turnNum;
+                    int diff = state.highestBet() - state.bet.get(turn);
+                    if (diff == 0) {
+                        state.cancelTimer(turn);
+                        System.out.println("check1");
+                    } else if (diff < state.money.get(turn)) {
+                        state.bet.set(turn, state.highestBet());
+                        state.money.set(turn, state.money.get(turn) - diff);
+                        state.cancelTimer(turn);
+                        System.out.println("check2");
+                    } else if (diff > state.money.get(turn)) { // all in
+                        state.bet.set(turn, state.bet.get(turn) + state.money.get(turn));
+                        state.money.set(turn, 0);
+                        state.cancelTimer(turn);
+                        System.out.println("all in");
+                    }
+                    state.setPlayerText(turn); 
                 }
-                String bet = state.bet.get(turn).toString();
-                String chips = state.money.get(turn).toString();
-                String name = state.playerList.get(turn);
-                String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + bet + "</html>";
-                state.p.get(turn).setText(text); 
             }
         });
         return button;
@@ -120,17 +122,32 @@ public class Game extends JPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int turn = state.turnNum;
-                state.folded.add(turn);
-                System.out.println(turn + " folded");
-                //if folded.size == playerlist.size - 1, 
-                //then check which player not folded, give them pot and end round
-                //else :
-                state.cancelTimer(turn);
-                
+                if (state.roundRunning) {
+                    int turn = state.turnNum;
+                    state.folded.add(turn);
+                    System.out.println(turn + " folded");
+                    int length = state.folded.size();
+                    if (length == (state.playerList.size() - 1)) {
+                        Collections.sort(state.folded);
+                        if (state.folded.get(0) != 0) {
+                            state.playerWon(0);
+                        } else if (state.folded.get(length - 1) != (length)) {
+                            state.playerWon(length);
+                        } else {
+                            for (int i = 0; i < length - 1; i++) {
+                                int current = state.folded.get(i);
+                                int next = state.folded.get(i + 1);
+                                if (next - current > 1) {
+                                    state.playerWon(i + 1);
+                                }
+                            }
+                        }
+                    } else {
+                        state.cancelTimer(turn);
+                    }
+                }  
             }
             });
-    
         return button;
     }
 
@@ -145,7 +162,6 @@ public class Game extends JPanel {
                 }
             }
             });
-    
         return button;
     }
 
@@ -156,22 +172,10 @@ public class Game extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (state.roundEnded) {
                     int player = winnerList.getSelectedIndex();
-                    state.money.set(player, (state.pot + state.money.get(player)));
-                    for (int i = 0; i < state.playerList.size(); i++) {
-                        state.bet.set(i, 0);
-                    }
-                    for (int j = 0; j < state.playerList.size(); j++) {
-                        String bet = state.bet.get(j).toString();
-                        String chips = state.money.get(j).toString();
-                        String name = state.playerList.get(j);
-                        String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + bet + "</html>";
-                        state.p.get(j).setText(text); 
-                        state.roundRunning = false;
-                    }
+                    state.playerWon(player);
                 } 
             }
             });
-    
         return button;
     }
 
@@ -180,15 +184,41 @@ public class Game extends JPanel {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int turn = state.turnNum;
-                String a = GameState.drawnCards.get((turn * 2) + 5);
-                String b = GameState.drawnCards.get((turn * 2) + 6);
-                state.hand.setText("[" + a + "]" + "[" + b + "]");  
+                if (state.roundRunning) {
+                    int turn = state.turnNum;
+                    state.hand.setText(state.getPlayerCards(turn)); 
+                } 
             }
             });
-    
         return button;
     }
 
-    
+    static ArrayList<JLabel> points() {
+        ArrayList<JLabel> points = new ArrayList<>();
+        JLabel zero = new JLabel();
+        zero.setBounds(100, 300, 200, 100);
+        JLabel one = new JLabel();
+        one.setBounds(200, 300, 100, 100);
+        JLabel two = new JLabel();
+        two.setBounds(300, 300, 200, 100);
+        JLabel three = new JLabel();
+        three.setBounds(400, 300, 200, 100);
+        JLabel four = new JLabel();
+        four.setBounds(500, 300, 200, 100);
+        JLabel five = new JLabel();
+        five.setBounds(600, 300, 100, 100);
+        JLabel six = new JLabel();
+        six.setBounds(700, 300, 100, 100);
+        JLabel seven = new JLabel();
+        seven.setBounds(800, 300, 100, 100);
+        points.add(zero);
+        points.add(one);
+        points.add(two);
+        points.add(three);
+        points.add(four);
+        points.add(five);
+        points.add(six);
+        points.add(seven);
+        return points;
+    }
 }

@@ -13,15 +13,14 @@ public class GameState {
     int r = 0;
     int partRound;
     int pot;
-    ArrayList<JLabel> p = points();
     ArrayList<String> playerList = new ArrayList<>();
     ArrayList<Integer> money = new ArrayList<>();
     ArrayList<Integer> bet = new ArrayList<>();
-    ArrayList<Integer> folded = new ArrayList<>();
+    ArrayList<Integer> folded;
     JFormattedTextField startAmount = new JFormattedTextField(NumberFormat.getIntegerInstance());
     JFormattedTextField startingBet = new JFormattedTextField(NumberFormat.getIntegerInstance());
-    static ArrayList<String> drawnCards = new ArrayList<String>();
-    ArrayList<String> cards = cards();
+    ArrayList<String> drawnCards;
+    ArrayList<String> cards;
     boolean foldedPlayer;
     boolean roundEnded = false;
     boolean roundRunning = false;
@@ -31,35 +30,6 @@ public class GameState {
     JLabel potLabel = new JLabel("Pot: 0");
     ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
     ScheduledFuture<?> f;
-
-    ArrayList<JLabel> points() {
-        ArrayList<JLabel> points = new ArrayList<>();
-        JLabel zero = new JLabel();
-        zero.setBounds(100, 300, 200, 100);
-        JLabel one = new JLabel();
-        one.setBounds(200, 300, 100, 100);
-        JLabel two = new JLabel();
-        two.setBounds(300, 300, 200, 100);
-        JLabel three = new JLabel();
-        three.setBounds(400, 300, 200, 100);
-        JLabel four = new JLabel();
-        four.setBounds(500, 300, 200, 100);
-        JLabel five = new JLabel();
-        five.setBounds(600, 300, 100, 100);
-        JLabel six = new JLabel();
-        six.setBounds(700, 300, 100, 100);
-        JLabel seven = new JLabel();
-        seven.setBounds(800, 300, 100, 100);
-        points.add(zero);
-        points.add(one);
-        points.add(two);
-        points.add(three);
-        points.add(four);
-        points.add(five);
-        points.add(six);
-        points.add(seven);
-        return points;
-    }
 
     public void calcPot() {
         pot = 0;
@@ -71,7 +41,7 @@ public class GameState {
 
     public boolean checkBot(String a) {
         if (a.equals(" Birgin")) {
-            //birgin()
+            //Bots.birgin();
             return true;
         } else if (a.equals(" Raiser")) {
             //raiser();
@@ -81,22 +51,32 @@ public class GameState {
         }
     }
 
+    public void setPlayerText(int n) {
+        String betNum = bet.get(n).toString(); 
+        String chips = money.get(n).toString();
+        String name = playerList.get(n);
+        String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + betNum + "</html>";
+        Game.p.get(n).setText(text);  
+    }
+
     public void round() {
         roundRunning = true;
         roundEnded = false;
+        folded = new ArrayList<>();
+        drawnCards = new ArrayList<String>();
+        cards = cards();
         middleCards.setText("[?][?][?][?][?]");
-        int anti = ((Number) startingBet.getValue()).intValue();
+        int ante = ((Number) startingBet.getValue()).intValue();
         for (int i = 0; i < playerList.size(); i++) {
-            money.set(i, (money.get(i) - anti)); //add check if possible 
-            bet.add(anti);
-            String betNum = bet.get(i).toString(); //we use it 4 times maybe make a method
-            String chips = money.get(i).toString();
-            String name = playerList.get(i);
-            String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + betNum + "</html>";
-            p.get(i).setText(text);  
+            if (money.get(i) >= ante) {
+                money.set(i, (money.get(i) - ante)); 
+                bet.set(i, ante);
+                setPlayerText(i); 
+            } else { //if ante cannot be paid, player will not play and be folded;
+                folded.add(i);
+            }
         }
         calcPot();
-        // maybe sleep 2 sec
         partRound = 1;
         turn2(0);
     }
@@ -119,13 +99,12 @@ public class GameState {
                 //(buttons should be gray)turn buttons gray
                 //sleep for 2 sec
                 //turn label back,
-                System.out.println("kaas??");
             } else {
                 System.out.println("turn: " + k);
                 //turn buttons green
                 //change (showcards) to k
                 f = timer.schedule(() -> {
-                    System.out.println("werkt ni");
+                    System.out.println("timeOut");
                     timeOutCheck(k); // just do a check if no input
                     timer.shutdown();
                 }, 400, TimeUnit.SECONDS); //400 sec time
@@ -140,7 +119,7 @@ public class GameState {
             f.cancel(true);
             //timer.shutdown();
             nextTurn(turn);
-            System.out.println("Button pressed — timer canceled.");
+            System.out.println("Button pressed timer canceled.");
         }
 
     }
@@ -173,16 +152,11 @@ public class GameState {
                 calcPot();
                 roundEnded = true;
                 System.out.println("choose winner");
-                //wincondition
-                //if players fold, win should be faster
+                showAllCards();
             }
-
-            System.out.println("kaas");
         } else if (k + 1 < playerList.size()) {
-            System.out.println("kaas1");
             turn2(k + 1);
         } else {
-            System.out.println("kaas2");
             turn2(0);
         }
     }
@@ -197,12 +171,7 @@ public class GameState {
         } else if (diff > money.get(turn)) {
             bet.set(turn, bet.get(turn) + money.get(turn));
         } 
-        String betNum = bet.get(turn).toString();
-        String chips = money.get(turn).toString();
-        String name = playerList.get(turn);
-        String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + betNum + "</html>";
-        p.get(turn).setText(text);  
-        //input = false;
+        setPlayerText(turn);
         nextTurn(turn);
     }
 
@@ -252,5 +221,34 @@ public class GameState {
         }
         System.out.println(l);
         return l;
+    }
+
+    public void playerWon(int player) {
+        money.set(player, (pot + money.get(player)));
+        for (int i = 0; i < playerList.size(); i++) {
+            bet.set(i, 0);
+            setPlayerText(i);
+        }
+        itsTurn.setText(playerList.get(player) + " won, start new round");
+        roundRunning = false;
+    }
+
+    public String getPlayerCards(int player) {
+        String a = drawnCards.get((player * 2) + 5);
+        String b = drawnCards.get((player * 2) + 6);
+        String hand = "[" + a + "]" + "[" + b + "]";
+        return hand;
+    }
+
+    public void showAllCards() {
+        for (int n = 0; n < playerList.size(); n++) {
+            String betNum = bet.get(n).toString(); 
+            String chips = money.get(n).toString();
+            String name = playerList.get(n);
+            String handCards = getPlayerCards(n);
+            String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + betNum 
+                + "<br/>Cards: " + handCards + "</html>";
+            Game.p.get(n).setText(text);
+        }  
     }
 }
