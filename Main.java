@@ -5,7 +5,7 @@ public class Main {
     GameState state = new GameState();
 
     void run() {
-        window.open(new CreateMenu(window, state));
+        window.open(new StartMenu(window, state));
     }
 
     public static void main(String[] args) {

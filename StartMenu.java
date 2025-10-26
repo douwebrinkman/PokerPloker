@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 
 public class StartMenu extends JPanel {
 
-    public StartMenu(Window window) {
+    public StartMenu(Window window, GameState state) {
         super();
         ImageIcon blah = new ImageIcon("logo.jpg");
         JLabel pic = new JLabel(blah);
