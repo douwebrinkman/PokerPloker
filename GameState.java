@@ -40,15 +40,15 @@ public class GameState {
         potLabel.setText("Pot: " + pot);
     }
 
-    public boolean checkBot(String a) {
+    public void checkBot(String a) {
         if (a.equals(" Birgin")) {
             birgin();
-            return true;
         } else if (a.equals(" Raiser")) {
-            //raiser();
-            return true;
+            raiser();
+        } else if (a.equals(" SmartAss")){
+            smartAss();
         } else {
-            return false;
+            return;
         }
     }
 
@@ -96,16 +96,13 @@ public class GameState {
             turnNum = k;
             hand.setText("[?][?]");
             itsTurn.setText("Its " + playerList.get(k) + " turn");
-            if (checkBot(playerList.get(k))) {
-                
-            } else {
-                System.out.println("turn: " + k);
-                f = timer.schedule(() -> {
-                    System.out.println("timeOut");
-                    timeOutCheck(k); // just do a check if no input
-                    timer.shutdown();
-                }, 400, TimeUnit.SECONDS); //400 sec time     
-            }
+            System.out.println("turn: " + k);
+            f = timer.schedule(() -> {
+                System.out.println("timeOut");
+                timeOutCheck(k); // just do a check if no input
+                timer.shutdown();
+            }, 400, TimeUnit.SECONDS); //400 sec time  
+            checkBot(playerList.get(k));   
         }
 
     }
@@ -113,7 +110,6 @@ public class GameState {
     void cancelTimer(int turn) {
         if (!f.isDone()) {
             f.cancel(true);
-            //timer.shutdown();
             nextTurn(turn);
             System.out.println("Button pressed timer canceled.");
         }
@@ -229,11 +225,21 @@ public class GameState {
         roundRunning = false;
     }
 
-    public String getPlayerCards(int player) {
+    public String getBothPlayerCards(int player) {
         String a = drawnCards.get((player * 2) + 5);
         String b = drawnCards.get((player * 2) + 6);
         String hand = "[" + a + "]" + "[" + b + "]";
         return hand;
+    }
+
+    public String getPlayerCard1(int player) {
+        String card = drawnCards.get((player * 2) + 5);
+        return card;
+    }
+
+    public String getPlayerCard2(int player) {
+        String card = drawnCards.get((player * 2) + 6);
+        return card;
     }
 
     public void showAllCards() {
@@ -241,7 +247,7 @@ public class GameState {
             String betNum = bet.get(n).toString(); 
             String chips = money.get(n).toString();
             String name = playerList.get(n);
-            String handCards = getPlayerCards(n);
+            String handCards = getBothPlayerCards(n);
             String text = "<html>" + name + "<br/>Chips: " + chips + "<br/>Bet: " + betNum 
                 + "<br/>Cards: " + handCards + "</html>";
             Game.p.get(n).setText(text);
@@ -269,9 +275,9 @@ public class GameState {
 
     void raise(int raise) {
         int turn = turnNum;
-        if (raise <= money.get(turn)) {
+        if ((raise <= money.get(turn)) && (raise + bet.get(turn) > highestBet())) {
             money.set(turn, money.get(turn) - raise);
-            bet.set(turn, bet.get(turn) + raise); // also add to pot?
+            bet.set(turn, bet.get(turn) + raise); 
             setPlayerText(turn); 
             r = turn;
             cancelTimer(turn);
@@ -305,7 +311,7 @@ public class GameState {
     }
 
     static String[] botNames() {
-        String[] botNames = {"select a bot", " Birgin", " Raiser"}; 
+        String[] botNames = {"select a bot", " Birgin", " Raiser", " SmartAss"}; 
         //space before name so no confusion if player name == botname
         return botNames;                                 
     }
@@ -316,7 +322,7 @@ public class GameState {
             int randomNum = b.nextInt(10); //0-9
             if (randomNum < 7) {
                 fold();
-            } else if (randomNum == 7 || randomNum == 8) { 
+            } else if (randomNum == 7) { 
                 check();
             } else {
                 raise(money.get(turnNum)/10);
@@ -326,6 +332,97 @@ public class GameState {
             if (r == 0 && randomNum < 7) {
                 fold();
             } else if (randomNum < 5) {
+                raise(money.get(turnNum/5));
+            } else {
+                check();
+            }
+        }
+    }
+
+    void raiser() {
+        Random b = new Random();
+        if (partRound == 1) {
+            int randomNum = b.nextInt(10); //0-9
+            if (randomNum < 6) {
+                raise(money.get(turnNum/10));
+            } else {
+                check();
+            }
+        } else if (partRound == 2) {
+            int randomNum = b.nextInt(10); //0-9
+            if (r == 0 && randomNum < 7) {
+                raise(money.get(turnNum/8));
+            } else if (randomNum == 7) {
+                raise(money.get(turnNum/3));
+            } else {
+                check();
+            }
+        } else if (partRound == 3) {
+            int randomNum = b.nextInt(10); //0-9
+            if (r == 0 && randomNum < 9) {
+                raise(money.get(turnNum/6));
+            } else if (randomNum < 3) {
+                raise(money.get(turnNum/3));
+            } else {
+                check();
+            }
+        } else {
+            int randomNum = b.nextInt(10); //0-9
+            if (r == 0 && randomNum < 10) {
+                raise(money.get(turnNum/5));
+            } else if (randomNum < 5) {
+                raise(money.get(turnNum/2));
+            } else {
+                check();
+            }
+        }
+    }
+
+    void smartAss() {
+        Random b = new Random();
+        String card1Num = getPlayerCard1(turnNum).substring(1);
+        String card2Num = getPlayerCard2(turnNum).substring(1);
+        String card1Type = getPlayerCard1(turnNum).substring(0, 1);
+        String card2Type = getPlayerCard2(turnNum).substring(0, 1);
+        if (partRound == 1) {
+            int randomNum = b.nextInt(10); //0-9
+            if ((card1Num.equals(card2Num) || card1Type.equals(card2Type)) && randomNum < 8) {
+                raise(money.get(turnNum/5));
+            } else if (randomNum < 3) {
+                raise(money.get(turnNum/5));
+            } else {
+                check();
+            }
+        } else if (partRound == 2) {
+            int randomNum = b.nextInt(10); //0-9
+            for (int i = 0; i < 3; i++) {
+                String McardNum = drawnCards.get(i).substring(0);
+                if (McardNum.equals(card1Num) || McardNum.equals(card2Num) || randomNum < 2) {
+                    raise(money.get(turnNum/5));
+                    return;
+                } 
+            }
+            if (randomNum == 7) {
+                raise(money.get(turnNum/5));
+            } else {
+                check();
+            }
+        } else if (partRound == 3) {
+            int randomNum = b.nextInt(10); //0-9
+            String McardNum = drawnCards.get(3).substring(0);
+            if (McardNum.equals(card1Num) || McardNum.equals(card2Num) || randomNum < 2) {
+                raise(money.get(turnNum/5));
+            } else if (randomNum == 7) {
+                raise(money.get(turnNum/5));
+            } else {
+                check();
+            }
+        } else {
+            int randomNum = b.nextInt(10); //0-9
+            String McardNum = drawnCards.get(4).substring(0);
+            if (McardNum.equals(card1Num) || McardNum.equals(card2Num) || randomNum < 2) {
+                raise(money.get(turnNum/5));
+            } else if (randomNum == 7) {
                 raise(money.get(turnNum/5));
             } else {
                 check();

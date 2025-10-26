@@ -74,6 +74,9 @@ public class Game extends JPanel {
                 if (state.roundRunning) {
                     int raise = ((Number) raiseAmount.getValue()).intValue();
                     state.raise(raise);
+                    System.out.println(raise);
+                    System.out.println(state.highestBet() + state.bet.get(state.turnNum));
+                    //raise <= money.get(turn)) && (raise >= highestBet() + bet.get(turn))
                 }
             }
         });
@@ -141,7 +144,7 @@ public class Game extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (state.roundRunning) {
                     int turn = state.turnNum;
-                    state.hand.setText(state.getPlayerCards(turn)); 
+                    state.hand.setText(state.getBothPlayerCards(turn)); 
                 } 
             }
             });
