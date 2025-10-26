@@ -72,16 +72,8 @@ public class Game extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (state.roundRunning) {
-                    int turn = state.turnNum;
-                    int raise = ((Number) raiseAmount.getValue()).intValue();;
-                    if (raise <= state.money.get(turn)) {
-                        state.money.set(turn, state.money.get(turn) - raise);
-                        state.bet.set(turn, state.bet.get(turn) + raise); // also add to pot?
-                        state.setPlayerText(turn); 
-                        state.r = turn;
-                        state.cancelTimer(turn);
-                        System.out.println("raised"); 
-                    }
+                    int raise = ((Number) raiseAmount.getValue()).intValue();
+                    state.raise(raise);
                 }
             }
         });
@@ -94,23 +86,7 @@ public class Game extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (state.roundRunning) {
-                    int turn = state.turnNum;
-                    int diff = state.highestBet() - state.bet.get(turn);
-                    if (diff == 0) {
-                        state.cancelTimer(turn);
-                        System.out.println("check1");
-                    } else if (diff < state.money.get(turn)) {
-                        state.bet.set(turn, state.highestBet());
-                        state.money.set(turn, state.money.get(turn) - diff);
-                        state.cancelTimer(turn);
-                        System.out.println("check2");
-                    } else if (diff > state.money.get(turn)) { // all in
-                        state.bet.set(turn, state.bet.get(turn) + state.money.get(turn));
-                        state.money.set(turn, 0);
-                        state.cancelTimer(turn);
-                        System.out.println("all in");
-                    }
-                    state.setPlayerText(turn); 
+                    state.check();
                 }
             }
         });
@@ -123,28 +99,7 @@ public class Game extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (state.roundRunning) {
-                    int turn = state.turnNum;
-                    state.folded.add(turn);
-                    System.out.println(turn + " folded");
-                    int length = state.folded.size();
-                    if (length == (state.playerList.size() - 1)) {
-                        Collections.sort(state.folded);
-                        if (state.folded.get(0) != 0) {
-                            state.playerWon(0);
-                        } else if (state.folded.get(length - 1) != (length)) {
-                            state.playerWon(length);
-                        } else {
-                            for (int i = 0; i < length - 1; i++) {
-                                int current = state.folded.get(i);
-                                int next = state.folded.get(i + 1);
-                                if (next - current > 1) {
-                                    state.playerWon(i + 1);
-                                }
-                            }
-                        }
-                    } else {
-                        state.cancelTimer(turn);
-                    }
+                    state.fold();
                 }  
             }
             });

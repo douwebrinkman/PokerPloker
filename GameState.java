@@ -1,5 +1,6 @@
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +42,7 @@ public class GameState {
 
     public boolean checkBot(String a) {
         if (a.equals(" Birgin")) {
-            //Bots.birgin();
+            birgin();
             return true;
         } else if (a.equals(" Raiser")) {
             //raiser();
@@ -96,19 +97,14 @@ public class GameState {
             hand.setText("[?][?]");
             itsTurn.setText("Its " + playerList.get(k) + " turn");
             if (checkBot(playerList.get(k))) {
-                //(buttons should be gray)turn buttons gray
-                //sleep for 2 sec
-                //turn label back,
+                
             } else {
                 System.out.println("turn: " + k);
-                //turn buttons green
-                //change (showcards) to k
                 f = timer.schedule(() -> {
                     System.out.println("timeOut");
                     timeOutCheck(k); // just do a check if no input
                     timer.shutdown();
-                }, 400, TimeUnit.SECONDS); //400 sec time
-                //set turnlabel back       
+                }, 400, TimeUnit.SECONDS); //400 sec time     
             }
         }
 
@@ -203,7 +199,7 @@ public class GameState {
         System.out.println(drawnCards);
     } 
 
-    int highestBet() { //int or integer?
+    int highestBet() {
         int max = bet.get(0);
         for (int i = 0; i < bet.size(); i++) {
             if (max < bet.get(i)) {
@@ -250,5 +246,90 @@ public class GameState {
                 + "<br/>Cards: " + handCards + "</html>";
             Game.p.get(n).setText(text);
         }  
+    }
+    void check() {
+        int turn = turnNum;
+        int diff = highestBet() - bet.get(turn);
+        if (diff == 0) {
+            cancelTimer(turn);
+            System.out.println("check1");
+        } else if (diff < money.get(turn)) {
+            bet.set(turn, highestBet());
+            money.set(turn, money.get(turn) - diff);
+            cancelTimer(turn);
+            System.out.println("check2");
+        } else if (diff > money.get(turn)) { // all in
+            bet.set(turn, bet.get(turn) + money.get(turn));
+            money.set(turn, 0);
+            cancelTimer(turn);
+            System.out.println("all in");
+        }
+        setPlayerText(turn); 
+    }
+
+    void raise(int raise) {
+        int turn = turnNum;
+        if (raise <= money.get(turn)) {
+            money.set(turn, money.get(turn) - raise);
+            bet.set(turn, bet.get(turn) + raise); // also add to pot?
+            setPlayerText(turn); 
+            r = turn;
+            cancelTimer(turn);
+            System.out.println("raised"); 
+        }
+    }
+
+    void fold() {
+        int turn = turnNum;
+        folded.add(turn);
+        System.out.println(turn + " folded");
+        int length = folded.size();
+        if (length == (playerList.size() - 1)) {
+            Collections.sort(folded);
+            if (folded.get(0) != 0) {
+                playerWon(0);
+            } else if (folded.get(length - 1) != (length)) {
+                playerWon(length);
+            } else {
+                for (int i = 0; i < length - 1; i++) {
+                    int current = folded.get(i);
+                    int next = folded.get(i + 1);
+                    if (next - current > 1) {
+                        playerWon(i + 1);
+                    }
+                }
+            }
+        } else {
+            cancelTimer(turn);
+        }
+    }
+
+    static String[] botNames() {
+        String[] botNames = {"select a bot", " Birgin", " Raiser"}; 
+        //space before name so no confusion if player name == botname
+        return botNames;                                 
+    }
+
+    void birgin() {
+        Random b = new Random();
+        if (partRound == 1) {
+            int randomNum = b.nextInt(10); //0-9
+            if (randomNum < 7) {
+                fold();
+            } else if (randomNum == 7 || randomNum == 8) { 
+                check();
+            } else {
+                raise(money.get(turnNum)/10);
+            }
+        } else {
+            int randomNum = b.nextInt(10); //0-9
+            if (r == 0 && randomNum < 7) {
+                fold();
+            } else if (randomNum < 5) {
+                raise(money.get(turnNum/5));
+            } else {
+                check();
+            }
+        }
     }
 }

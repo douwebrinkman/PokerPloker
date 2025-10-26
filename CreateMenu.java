@@ -14,7 +14,7 @@ import javax.swing.JTextField;
 
 
 public class CreateMenu extends JPanel {
-    JComboBox<String> botList = new JComboBox<>(Bots.botNames());
+    JComboBox<String> botList = new JComboBox<>(GameState.botNames());
     JTextField nameBox = new JTextField("Player 1");
     JLabel error = new JLabel("");
     JLabel list = new JLabel("Players: ");
